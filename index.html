@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rakshak Angel Terminal</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        body { background: #000; color: #00ff00; font-family: 'Orbitron', sans-serif; text-align: center; }
+        .status-box { border: 2px solid #00ff00; padding: 20px; margin: 50px auto; width: 80%; box-shadow: 0 0 20px #00ff00; }
+        .alert-active { background: #8b0000; color: #fff; border-color: #ff0000; box-shadow: 0 0 30px #ff0000; animation: blink 1s infinite; }
+        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+        button { background: #00ff00; color: #000; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div id="mainDisplay" class="status-box">
+        <h1>ANGEL TERMINAL</h1>
+        <p id="statusText">SYSTEM SCANNING...</p>
+    </div>
+
+    <script>
+        // Firebase Config (आर्यन भाई, अपनी पुरानी वाली ही डालें)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBRVPpAPAquoxRrMxSUbinZ9Z8bRIlB37M",
+            databaseURL: "https://raksha-network-299bf-default-rtdb.firebaseio.com",
+            projectId: "raksha-network-299bf"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let siren = new Audio('alarm.mp3'); 
+        siren.loop = true;
+
+        // रीयल-टाइम अलर्ट सुनना
+        db.ref('global_alerts').limitToLast(1).on('child_added', (snapshot) => {
+            const data = snapshot.val();
+            const currentTime = Date.now();
+            
+            // अगर अलर्ट 2 मिनट से नया है
+            if (data && (currentTime - data.timestamp < 120000)) {
+                document.getElementById("mainDisplay").className = "status-box alert-active";
+                document.getElementById("statusText").innerHTML = `🚨 EMERGENCY: ${data.user} 🚨`;
+                siren.play();
+                
+                // एंजेल्स के लिए डायरेक्ट नेविगेशन
+                let btn = document.createElement("button");
+                btn.innerHTML = "NAVIGATE TO VICTIM";
+                btn.onclick = () => window.open(`http://maps.google.com/?q=${data.lat},${data.lon}`);
+                document.getElementById("mainDisplay").appendChild(btn);
+            }
+        });
+    </script>
+</body>
+</html>
