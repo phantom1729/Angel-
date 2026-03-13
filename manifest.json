@@ -1,11 +1,13 @@
 {
-  "name": "Rakshak Angel Mode",
+  "name": "Rakshak Angel Terminal",
   "short_name": "AngelTerminal",
-  "start_url": "index.html",
+  "start_url": "angel.html",
   "display": "standalone",
   "background_color": "#000000",
-  "theme_color": "#00ff00",
+  "theme_color": "#ff0000",
   "icons": [
-    { "src": "icon.png", "sizes": "192x192", "type": "image/png" }
+    { "src": "icon.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
+
