@@ -1,29 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rakshak Angel Terminal</title>
-    <link rel="manifest" href="manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <style>
-        body { background: #000; color: #00ff00; font-family: 'Orbitron', sans-serif; text-align: center; margin:0; }
-        .status-box { border: 2px solid #00ff00; padding: 30px; margin: 50px auto; width: 85%; box-shadow: 0 0 20px #00ff00; border-radius: 15px; }
-        .alert-active { background: #8b0000 !important; color: #fff !important; border-color: #ff0000 !important; box-shadow: 0 0 40px #ff0000 !important; animation: blink 0.8s infinite; }
-        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.7;} 100% {opacity: 1;} }
-        .btn-nav { background: #fff; color: #ff0000; border: none; padding: 20px; font-weight: bold; cursor: pointer; width: 100%; border-radius: 10px; font-size: 18px; margin-top: 20px; display: none; }
-    </style>
 </head>
-<body onclick="enableAudio()">
-    <div id="mainDisplay" class="status-box">
-        <h1>ANGEL TERMINAL</h1>
-        <p id="statusText">📡 SYSTEM SCANNING...</p>
-        <button id="navBtn" class="btn-nav">NAVIGATE TO VICTIM</button>
-    </div>
+<body>
+    <h1 style="text-align:center; font-family: sans-serif;">📡 Angel Terminal Active</h1>
+    <p style="text-align:center;">Listening for SOS signals...</p>
 
     <script>
+        // आपका Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBRVPpAPAquoxRrMxSUbinZ9Z8bRIlB37M",
             databaseURL: "https://raksha-network-299bf-default-rtdb.firebaseio.com",
@@ -32,31 +19,23 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let siren = new Audio('alarm.mp3'); 
-        siren.loop = true;
-        let audioAllowed = false;
+        const ANGEL_BOT_TOKEN = "8607561861:AAExnrMsiHpECU8i9fjvkV6UakL00m1CjiY";
+        const CHAT_ID = "8508792403";
 
-        function enableAudio() { audioAllowed = true; console.log("Audio Enabled"); }
-
-        // Service Worker Register
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').then(() => console.log("SW Active"));
-        }
-
-        // Real-time Alert Listener
+        // फायरबेस को सुनना
         db.ref('global_alerts').limitToLast(1).on('child_added', (snapshot) => {
             const data = snapshot.val();
             const currentTime = Date.now();
-            
-            if (data && (currentTime - data.timestamp < 120000)) {
-                document.getElementById("mainDisplay").classList.add("alert-active");
-                document.getElementById("statusText").innerHTML = `🚨 EMERGENCY: ${data.user} 🚨`;
-                const navBtn = document.getElementById("navBtn");
-                navBtn.style.display = "block";
-                navBtn.onclick = () => window.open(`https://www.google.com/maps?q=${data.lat},${data.lon}`);
+
+            // अगर अलर्ट 1 मिनट से ज्यादा पुराना नहीं है
+            if (data && (currentTime - data.timestamp < 60000)) {
+                const mapLink = `https://www.google.com/maps?q=$${data.lat},${data.lon}`;
+                const msg = `🚨 *NEW SOS ALERT FROM NETWORK* 🚨\n👤 *User:* ${data.user}\n📍 *Loc:* [Navigate to Victim](${mapLink})`;
+
+                // Telegram पर अलर्ट भेजना
+                fetch(`https://api.telegram.org/bot${ANGEL_BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`);
                 
-                if(audioAllowed) siren.play();
-                if(navigator.vibrate) navigator.vibrate([1000, 500, 1000]);
+                console.log("Alert sent to Angels!");
             }
         });
     </script>
