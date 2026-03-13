@@ -23,21 +23,32 @@
         const CHAT_ID = "8508792403";
 
         // फायरबेस को सुनना
-        db.ref('global_alerts').limitToLast(1).on('child_added', (snapshot) => {
-            const data = snapshot.val();
-            const currentTime = Date.now();
+        // फायरबेस को सुनना
+db.ref('global_alerts').limitToLast(1).on('child_added', (snapshot) => {
+    const data = snapshot.val();
+    const currentTime = Date.now();
+    
+    console.log("New data detected in Firebase!"); // चेक करने के लिए कि डेटा आ रहा है या नहीं
 
-            // अगर अलर्ट 1 मिनट से ज्यादा पुराना नहीं है
-            if (data && (currentTime - data.timestamp < 60000)) {
-                const mapLink = `https://www.google.com/maps?q=$${data.lat},${data.lon}`;
-                const msg = `🚨 *NEW SOS ALERT FROM NETWORK* 🚨\n👤 *User:* ${data.user}\n📍 *Loc:* [Navigate to Victim](${mapLink})`;
+    // टेस्टिंग के लिए समय की सीमा (60000) को हटाकर देखें या बढ़ा दें
+    if (data) {
+        const mapLink = `https://www.google.com/maps?q=${data.lat},${data.lon}`; // सही मैप लिंक फॉर्मेट
+        const msg = `🚨 *NEW SOS ALERT FROM NETWORK* 🚨\n👤 *User:* ${data.user}\n📍 *Loc:* [Navigate to Victim](${mapLink})`;
 
-                // Telegram पर अलर्ट भेजना
-                fetch(`https://api.telegram.org/bot${ANGEL_BOT_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=Markdown`);
-                
-                console.log("Alert sent to Angels!");
-            }
-        });
+        fetch(`https://api.telegram.org/bot${ANGEL_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: CHAT_ID,
+                text: msg,
+                parse_mode: 'Markdown'
+            })
+        })
+        .then(res => res.json())
+        .then(json => console.log("Telegram Response:", json))
+        .catch(err => console.error("Error sending to Telegram:", err));
+    }
+});
     </script>
 </body>
 </html>
